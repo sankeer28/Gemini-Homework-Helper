@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gemini API Chat</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+</head>
+<body>
+  <input id="userInput" type="text" placeholder="Enter your message here">
+  <button id="sendButton">Send</button>
+  <input type="file" id="pdfInput">
+  <div id="output"></div>
+
+  <script type="module">
+    import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+
+    const API_KEY = ""; // Your API key here
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-pro",
+      safetySettings: [
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+      ]
+    });
+
+    document.getElementById('sendButton').addEventListener('click', async () => {
+      const userInput = document.getElementById('userInput').value;
+      const result = await model.generateContent(userInput);
+      const response = await result.response;
+      const text = response.text();
+      document.getElementById('output').innerText = text;
+    });
+
+    document.getElementById('pdfInput').addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        const pdfData = new Uint8Array(evt.target.result);
+        const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+        let textContent = '';
+        for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+          const page = await pdfDoc.getPage(pageNum);
+          const text = await page.getTextContent();
+          textContent += text.items.map(item => item.str).join(' ');
+        }
+        document.getElementById('userInput').value = textContent;
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+</body>
+</html>
