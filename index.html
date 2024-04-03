@@ -14,6 +14,7 @@
     }
   </script>
   <link rel="stylesheet" type="text/css" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <div class="title">
@@ -21,6 +22,7 @@
         
         <p>Unblock Homework Hurdles: Get Help When You’re Stuck!</p>
     </div>
+  <input id="apiKeyInput" type="text" placeholder="Enter your API key">
   <input type="file" id="fileInput">
   <input id="userInput" type="text" style="display: none;">
   <input id="questionInput" type="text" placeholder="Ask question here (optional)">
@@ -30,79 +32,89 @@
   <script type="module">
     import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
-    let API_KEY = localStorage.getItem('API_KEY'); 
-    if (!API_KEY) {
-      API_KEY = prompt("Please enter your API key"); 
-      localStorage.setItem('API_KEY', API_KEY); 
+    let API_KEY = localStorage.getItem('API_KEY');
+    document.getElementById('apiKeyInput').value = API_KEY;
+
+    async function initialize() {
+      let genAI;
+      let model;
+
+      async function createModel() {
+        API_KEY = document.getElementById('apiKeyInput').value;
+        localStorage.setItem('API_KEY', API_KEY);
+        genAI = new GoogleGenerativeAI(API_KEY);
+        model = genAI.getGenerativeModel({ 
+          model: "gemini-pro",
+          safetySettings: [
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+          ]
+        });
+      }
+
+      await createModel();
+
+      document.getElementById('sendButton').addEventListener('click', async () => {
+          const userInput = document.getElementById('userInput').value;
+          const questionInput = document.getElementById('questionInput').value;
+          const outputElement = document.getElementById('output');
+      
+          outputElement.innerHTML = '<p>Please wait...</p>';
+      
+          const result = await model.generateContent(questionInput + ' ' + userInput);
+          const response = await result.response;
+          const text = response.text();
+          
+          if (text.trim() === '') {
+              const fileInput = document.getElementById('fileInput');
+              if (fileInput.files.length > 0) {
+                  const file = fileInput.files[0];
+                  const reader = new FileReader();
+                  reader.onload = async function(evt) {
+                      const arrayBuffer = evt.target.result;
+                      const { data: { text } } = await Tesseract.recognize(arrayBuffer, 'eng', { logger: m => console.log(m) });
+                      outputElement.innerText = text;
+                  };
+                  reader.readAsDataURL(file);
+              } else {
+                  outputElement.innerText = 'No text input or image selected';
+              }
+          } else {
+              const converter = new showdown.Converter();
+              const html = converter.makeHtml(text);
+              outputElement.innerHTML = html;
+          }
+      });
+
+      document.getElementById('fileInput').addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async function(evt) {
+          const arrayBuffer = evt.target.result;
+          if (file.type === 'application/pdf') {
+            const pdfData = new Uint8Array(arrayBuffer);
+            const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+            let textContent = '';
+            for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+              const page = await pdfDoc.getPage(pageNum);
+              const text = await page.getTextContent();
+              textContent += text.items.map(item => item.str).join(' ');
+            }
+            document.getElementById('userInput').value = textContent;
+          } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            document.getElementById('userInput').value = textContent.value;
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+
+      document.getElementById('apiKeyInput').addEventListener('input', createModel);
     }
 
-    const genAI = new GoogleGenerativeAI(API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-pro",
-      safetySettings: [
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-      ]
-    });
-
-    document.getElementById('sendButton').addEventListener('click', async () => {
-        const userInput = document.getElementById('userInput').value;
-        const questionInput = document.getElementById('questionInput').value;
-        const outputElement = document.getElementById('output');
-        
-    
-        outputElement.innerHTML = '<p>Please wait...</p>';
-    
-        const result = await model.generateContent(questionInput + ' ' + userInput);
-        const response = await result.response;
-        const text = response.text();
-        
-        if (text.trim() === '') {
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = async function(evt) {
-                    const arrayBuffer = evt.target.result;
-                    const { data: { text } } = await Tesseract.recognize(arrayBuffer, 'eng', { logger: m => console.log(m) });
-                    outputElement.innerText = text;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                outputElement.innerText = 'No text input or image selected';
-            }
-        } else {
-            const converter = new showdown.Converter();
-            const html = converter.makeHtml(text);
-            outputElement.innerHTML = html;
-        }
-    });
-    
-    
-    document.getElementById('fileInput').addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        const arrayBuffer = evt.target.result;
-        if (file.type === 'application/pdf') {
-          const pdfData = new Uint8Array(arrayBuffer);
-          const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
-          let textContent = '';
-          for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-            const page = await pdfDoc.getPage(pageNum);
-            const text = await page.getTextContent();
-            textContent += text.items.map(item => item.str).join(' ');
-          }
-          document.getElementById('userInput').value = textContent;
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-          document.getElementById('userInput').value = textContent.value;
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    });
+    initialize();
   </script>
 </body>
 </html>
