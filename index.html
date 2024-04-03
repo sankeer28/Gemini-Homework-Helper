@@ -127,6 +127,7 @@
             textContent += text.items.map(item => item.str).join(' ');
           }
           document.getElementById('userInput').value = textContent;
+          console.log(textContent);
         } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
           const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
           document.getElementById('userInput').value = textContent.value;
