@@ -6,7 +6,8 @@ This project uses the Google Generative AI to help with homework. It can process
 
 1. If you have a PDF or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI.
 2. You can also type your question directly into the text input field regarding a part of the document.
-3. Click the "Send" button to get the AI's response.
+3. You can upload an image and ask a question regarding it.
+4. Click the "Send" button to get the AI's response.
 
 ## API Key
 
