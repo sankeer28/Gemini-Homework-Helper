@@ -6,6 +6,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.4.0/dist/tesseract.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script type="importmap">
     {
       "imports": {
@@ -21,7 +22,11 @@
   <h1>Gemini Homework Helper </h1>
   <p>Unblock Homework Hurdles: Get Help When You’re Stuck!</p>
 </div>
-<input id="apiKeyInput" type="text" placeholder="Enter your API key">
+<div style="position: relative;">
+  <input id="apiKeyInput" type="password" placeholder="Enter your API key">
+  <i id="togglePasswordVisibility" class="fa fa-eye-slash"></i>
+</div>
+
 <input type="file" id="fileInput">
 <select id="modelSelect" style="display: none;">
     <option value="gemini-pro">Gemini Pro</option>
@@ -34,6 +39,16 @@
 <div id="output"></div>
 
 <script type="module">
+  const apiKeyInput = document.getElementById('apiKeyInput');
+  const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+
+  togglePasswordVisibility.addEventListener('click', () => {
+    const type = apiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    apiKeyInput.setAttribute('type', type);
+
+    togglePasswordVisibility.classList.toggle('fa-eye');
+    togglePasswordVisibility.classList.toggle('fa-eye-slash');
+  });
   import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
 
   let API_KEY = localStorage.getItem('API_KEY');
