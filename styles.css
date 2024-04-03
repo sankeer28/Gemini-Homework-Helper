@@ -94,3 +94,19 @@ p {
         width: 90%; 
     }
 }
+
+
+#modelSelect {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #cdcfd0;
+    color: #333;
+    width: 200px;
+}
+
+#modelSelect option {
+    padding: 5px;
+}
