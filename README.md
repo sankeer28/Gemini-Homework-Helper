@@ -5,6 +5,7 @@ This project uses the Google Generative AI to help with homework. It can process
 - Saves API key to cache, which will still be there upon page reload
 - Uses Gemini-Pro and Gemini-Pro-Vision models to interpret text and images, models are automatically selected
 - Mobile friendly layout
+- Markdown support for AI output
   
 ## Usage
 1. If you have a PDF (PDF must have copy-pasteable text) or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI.
