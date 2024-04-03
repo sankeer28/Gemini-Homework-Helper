@@ -53,7 +53,12 @@
           ]
         });
       }
-
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        apiKeyInput.placeholder = "Enter API key here";
+      });
+      
       await createModel();
 
       document.getElementById('sendButton').addEventListener('click', async () => {
