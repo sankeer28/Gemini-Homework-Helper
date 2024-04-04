@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gemini Homework Help</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.2.228/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@2.4.0/dist/tesseract.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "@google/generative-ai": "https://esm.run/@google/generative-ai"
+      }
+    }
+  </script>
+  <link rel="stylesheet" type="text/css" href="styles.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <div class="title">
+        <h1>Gemini Homework Helper </h1>
+        
+        <p>Unblock Homework Hurdles: Get Help When You’re Stuck!</p>
+    </div>
+  <input id="apiKeyInput" type="text" placeholder="Enter your API key">
+  <input type="file" id="fileInput">
+  <input id="userInput" type="text" style="display: none;">
+  <input id="questionInput" type="text" placeholder="Ask question here (optional)">
+  <button id="sendButton">Send</button>
+  <select id="modelSelect">
+    <option value="gemini-pro-vision">Gemini Pro Vision</option>
+  </select>
+  
+  <div id="output"></div>
+
+  <script type="module">
+    import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "@google/generative-ai";
+
+    let API_KEY = localStorage.getItem('API_KEY');
+    document.getElementById('apiKeyInput').value = API_KEY;
+    
+    // Converts a File object to a GoogleGenerativeAI.Part object.
+    async function fileToGenerativePart(file) {
+      const base64EncodedDataPromise = new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+        reader.readAsDataURL(file);
+      });
+      return {
+        inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
+      };
+    }
+    
+    async function initialize() {
+      let genAI;
+      let model;
+    
+      async function createModel() {
+        API_KEY = document.getElementById('apiKeyInput').value;
+        localStorage.setItem('API_KEY', API_KEY);
+        genAI = new GoogleGenerativeAI(API_KEY);
+        const modelType = document.getElementById('modelSelect').value;
+        model = genAI.getGenerativeModel({ 
+          model: modelType,
+          safetySettings: [
+            { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+            { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+          ]
+        });
+      }
+      
+      window.addEventListener('DOMContentLoaded', () => {
+        const apiKeyInput = document.getElementById('apiKeyInput');
+        apiKeyInput.placeholder = "Enter API key here";
+      });
+      
+      await createModel();
+    
+      document.getElementById('sendButton').addEventListener('click', async () => {
+        const fileInput = document.getElementById('fileInput');
+        const prompt = document.getElementById('questionInput').value;
+    
+        const outputElement = document.getElementById('output');
+        outputElement.innerHTML = '<p>Please wait...</p>'; 
+    
+        const imageParts = await Promise.all(
+            [...fileInput.files].map(fileToGenerativePart)
+        );
+    
+        const result = await model.generateContent([prompt, ...imageParts]);
+        const response = await result.response;
+        const text = response.text();
+        outputElement.innerText = text;
+    });
+    
+    
+    
+      document.getElementById('fileInput').addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = async function(evt) {
+          const arrayBuffer = evt.target.result;
+          if (file.type === 'application/pdf') {
+            const pdfData = new Uint8Array(arrayBuffer);
+            const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+            let textContent = '';
+            for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+              const page = await pdfDoc.getPage(pageNum);
+              const text = await page.getTextContent();
+              textContent += text.items.map(item => item.str).join(' ');
+            }
+            document.getElementById('userInput').value = textContent;
+          } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+            document.getElementById('userInput').value = textContent.value;
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    
+      document.getElementById('apiKeyInput').addEventListener('input', createModel);
+      document.getElementById('modelSelect').addEventListener('change', createModel);
+    }
+    
+    initialize();
+  </script>
+</body>
+</html>

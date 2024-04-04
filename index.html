@@ -28,12 +28,7 @@
 </div>
 
 <input type="file" id="fileInput">
-<select id="modelSelect" style="display: none;">
-    <option value="gemini-pro">Gemini Pro</option>
-    <option value="gemini-pro-vision">Gemini Pro Vision</option>
-  </select>
-<input id="userInput" type="text" style="display: none;">
-<input id="questionInput" type="text" placeholder="Ask question here (optional)">
+<input id="questionInput" type="text" placeholder="Ask your question here ">
 
 <button id="sendButton">Send</button>
 <div id="output"></div>
@@ -54,164 +49,99 @@
   let API_KEY = localStorage.getItem('API_KEY');
   document.getElementById('apiKeyInput').value = API_KEY;
 
-  async function initializeGeminiPro() {
-    let genAI;
-    let model;
+  let genAI;
+  let model;
 
-    async function createModel() {
-      API_KEY = document.getElementById('apiKeyInput').value;
-      localStorage.setItem('API_KEY', API_KEY);
-      genAI = new GoogleGenerativeAI(API_KEY);
-      model = genAI.getGenerativeModel({ 
-        model: "gemini-pro",
-        safetySettings: [
-          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-        ]
-      });
-    }
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      const apiKeyInput = document.getElementById('apiKeyInput');
-      apiKeyInput.placeholder = "Enter API key here";
+  async function createModel(modelType = "gemini-pro") {
+    API_KEY = document.getElementById('apiKeyInput').value;
+    localStorage.setItem('API_KEY', API_KEY);
+    genAI = new GoogleGenerativeAI(API_KEY);
+    model = genAI.getGenerativeModel({ 
+      model: modelType,
+      safetySettings: [
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
+      ]
     });
-    
-    await createModel();
+  }
+  
+  window.addEventListener('DOMContentLoaded', () => {
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    apiKeyInput.placeholder = "Enter API key here";
+  });
+  
+  await createModel();
 
-    document.getElementById('sendButton').addEventListener('click', async () => {
-        const userInput = document.getElementById('userInput').value;
-        const questionInput = document.getElementById('questionInput').value;
-        const outputElement = document.getElementById('output');
-    
-        outputElement.innerHTML = '<p>Please wait...</p>';
-    
-        const result = await model.generateContent(questionInput + ' ' + userInput);
+  document.getElementById('sendButton').addEventListener('click', async () => {
+    const fileInput = document.getElementById('fileInput');
+    const prompt = document.getElementById('questionInput').value;
+
+    const outputElement = document.getElementById('output');
+    outputElement.innerHTML = '<p>Please wait...</p>'; 
+
+    if (fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = async function(evt) {
+        const arrayBuffer = evt.target.result;
+        let textContent = '';
+        if (file.type === 'application/pdf') {
+          const pdfData = new Uint8Array(arrayBuffer);
+          const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+          for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+            const page = await pdfDoc.getPage(pageNum);
+            const text = await page.getTextContent();
+            textContent += text.items.map(item => item.str).join(' ');
+
+          }
+        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          const textContentResult = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+          textContent = textContentResult.value;
+        
+        } else { 
+          const imageParts = await Promise.all(
+            [...fileInput.files].map(fileToGenerativePart)
+          );
+          const result = await model.generateContent([prompt, ...imageParts]);
+          const response = await result.response;
+          const text = response.text();
+          outputElement.innerText = text;
+          return; 
+        }
+
+        console.log(textContent);
+        const result = await model.generateContent(prompt + ' ' + textContent);
         const response = await result.response;
         const text = response.text();
         
         if (text.trim() === '') {
-            const fileInput = document.getElementById('fileInput');
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                reader.onload = async function(evt) {
-                    const arrayBuffer = evt.target.result;
-                    const { data: { text } } = await Tesseract.recognize(arrayBuffer, 'eng', { logger: m => console.log(m) });
-                    outputElement.innerText = text;
-                };
-                reader.readAsDataURL(file);
-            } else {
-                outputElement.innerText = 'No text input or image selected';
-            }
+          outputElement.innerText = 'No text input or image selected';
         } else {
-            const converter = new showdown.Converter();
-            const html = converter.makeHtml(text);
-            outputElement.innerHTML = html;
-        }
-    });
-
-    document.getElementById('fileInput').addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        const arrayBuffer = evt.target.result;
-        if (file.type === 'application/pdf') {
-          const pdfData = new Uint8Array(arrayBuffer);
-          const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
-          let textContent = '';
-          for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-            const page = await pdfDoc.getPage(pageNum);
-            const text = await page.getTextContent();
-            textContent += text.items.map(item => item.str).join(' ');
-          }
-          document.getElementById('userInput').value = textContent;
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-          document.getElementById('userInput').value = textContent.value;
-        } else {
-          const modelSelect = document.getElementById('modelSelect');
-          modelSelect.value = 'gemini-pro-vision';
-          initializeGeminiProVision();
+          const converter = new showdown.Converter();
+          const html = converter.makeHtml(text);
+          outputElement.innerHTML = html;
         }
       };
       reader.readAsArrayBuffer(file);
-    });
-
-    document.getElementById('apiKeyInput').addEventListener('input', createModel);
-  }
-
-  async function initializeGeminiProVision() {
-    let genAI;
-    let model;
-
-    async function createModel() {
-      API_KEY = document.getElementById('apiKeyInput').value;
-      localStorage.setItem('API_KEY', API_KEY);
-      genAI = new GoogleGenerativeAI(API_KEY);
-      const modelType = document.getElementById('modelSelect').value;
-      model = genAI.getGenerativeModel({ 
-        model: modelType,
-        safetySettings: [
-          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE }
-        ]
-      });
+    } else {
+      outputElement.innerText = 'No file selected';
     }
-    
-    window.addEventListener('DOMContentLoaded', () => {
-      const apiKeyInput = document.getElementById('apiKeyInput');
-      apiKeyInput.placeholder = "Enter API key here";
-    });
-    
-    await createModel();
+  });
+  
+  document.getElementById('fileInput').addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (file.type.startsWith('image/')) {
+      await createModel("gemini-pro-vision"); 
+    } else {
+      await createModel("gemini-pro"); 
+    }
+  });
 
-    document.getElementById('sendButton').addEventListener('click', async () => {
-      const fileInput = document.getElementById('fileInput');
-      const prompt = document.getElementById('questionInput').value;
-
-      const outputElement = document.getElementById('output');
-      outputElement.innerHTML = '<p>Please wait...</p>'; 
-
-      const imageParts = await Promise.all(
-          [...fileInput.files].map(fileToGenerativePart)
-      );
-
-      const result = await model.generateContent([prompt, ...imageParts]);
-      const response = await result.response;
-      const text = response.text();
-      outputElement.innerText = text;
-    });
-
-    document.getElementById('fileInput').addEventListener('change', async (event) => {
-      const file = event.target.files[0];
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        const arrayBuffer = evt.target.result;
-        if (file.type === 'application/pdf') {
-          const pdfData = new Uint8Array(arrayBuffer);
-          const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
-          let textContent = '';
-          for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-            const page = await pdfDoc.getPage(pageNum);
-            const text = await page.getTextContent();
-            textContent += text.items.map(item => item.str).join(' ');
-          }
-          document.getElementById('userInput').value = textContent;
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          const textContent = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-          document.getElementById('userInput').value = textContent.value;
-        }
-      };
-      reader.readAsArrayBuffer(file);
-    });
-
-    document.getElementById('apiKeyInput').addEventListener('input', createModel);
-    document.getElementById('modelSelect').addEventListener('change', createModel);
-  }
+  document.getElementById('apiKeyInput').addEventListener('input', () => {
+    createModel(model.model);
+  });
 
   async function fileToGenerativePart(file) {
     const base64EncodedDataPromise = new Promise((resolve) => {
@@ -223,21 +153,6 @@
       inlineData: { data: await base64EncodedDataPromise, mimeType: file.type },
     };
   }
-
-  function initialize() {
-    const modelSelect = document.getElementById('modelSelect');
-    modelSelect.addEventListener('change', () => {
-      const selectedModel = modelSelect.value;
-      if (selectedModel === 'gemini-pro') {
-        initializeGeminiPro();
-      } else if (selectedModel === 'gemini-pro-vision') {
-        initializeGeminiProVision();
-      }
-    });
-    initializeGeminiPro(); 
-  }
-
-  initialize();
 </script>
 </body>
 </html>

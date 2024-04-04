@@ -24,6 +24,8 @@ input, button {
     height: 40px;
     background-color: #404950; 
     color: #ffffff;
+    padding-left: 15px;
+  
 }
 
 #sendButton {
@@ -35,8 +37,8 @@ input, button {
 }
 
 #sendButton:hover {
-    background-color: #5462b4; /* Change color on hover */
-    transform: scale(1.05); /* Scale up slightly on hover */
+    background-color: #5462b4; 
+    transform: scale(1.05); 
 }
 
 
@@ -49,8 +51,25 @@ input, button {
     color: #ffffff;
     background-color: #23272a;
     border-radius: 10px; 
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3); 
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+    scrollbar-width: thin; 
+    scrollbar-color: #5462b4 #23272a; 
 }
+
+#output::-webkit-scrollbar {
+    width: 10px; 
+}
+
+#output::-webkit-scrollbar-thumb {
+    background-color: #5462b4; 
+    border-radius: 5px;
+}
+
+#output::-webkit-scrollbar-track {
+    background-color: #23272a; 
+    border-radius: 5px;
+}
+
 
 h1 {
     text-align: center;
