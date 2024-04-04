@@ -16,8 +16,9 @@ This project uses the Google Generative AI Gemini Pro to help students with home
 - Markdown support for output.
 
 ## Usage
-1. If you have a PDF (PDF must have copy-pasteable text) or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI. Uploading an image uses the Gemini-Pro-Vision model.
-2. You can also type your question directly into the text input field regarding a part of the document.
+1. Go to https://gemini-homework-helper.vercel.app/
+2. If you have a PDF (PDF must have copy-pasteable text) or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI. Uploading an image uses the Gemini-Pro-Vision model.
+3. You can also type your question directly into the text input field regarding a part of the document.
 4. Click the "Send" button to get the AI's response.
 
 ## API Key
