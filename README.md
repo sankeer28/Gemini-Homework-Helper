@@ -18,3 +18,4 @@ You will need to provide your Google Generative AI API key. You can get an API k
 
 ## Note
 This project is for educational purposes only. Please use it responsibly.
+- [API documentation for Web-based use](https://ai.google.dev/tutorials/get_started_web)
