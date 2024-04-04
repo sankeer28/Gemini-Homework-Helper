@@ -4,10 +4,9 @@ This project uses the Google Generative AI Gemini Pro to help students with home
 <div style="display: flex; justify-content: center; margin: 0 auto;">
     <img src="https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/f6ffc0af-2d3e-49e9-8cb6-fac2396954d2" alt="Image 1" style="width: 100%; max-width: 100%;">
 </div>
+For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be found at https://ai.google.dev/models/gemini
 
-
-### Currently uses Gemini 1.0 Pro, will be updated to use Gemini 1.5 Pro once API is released to the public alongside new features
-#### More information on models can be found [here](https://ai.google.dev/models/gemini)
+### Currently uses Gemini 1.0 Pro, will be updated to use Gemini 1.5 Pro once API is released to the public alongside new features. 
 ## Features
 - Uses API version V1.
 - Saves API key to the cache, which persists upon page reload.
