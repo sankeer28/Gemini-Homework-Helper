@@ -24,7 +24,6 @@ This project uses the Google Generative AI Gemini Pro to help students with home
 You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/)
 
 ## Contributing
-Whether you're an experienced developer or just getting started, there are many ways you can contribute to this project.
 1. **Bug Reports**: If you encounter any issues with the application, please file a bug report in the issue tracker on our project page.
 2. **Feature Requests**: If you have a great idea for a new feature, feel free to submit it as a feature request on our project page. Please provide as much detail as possible about your idea.
 3. **Code Contributions**: If you'd like to contribute code, bug fixes or improvements to the project, please fork the repository, make your changes, and submit a pull request. We'll review your contributions and integrate them into the project as soon as we can.
