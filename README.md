@@ -6,7 +6,7 @@ This project uses the **Google Generative AI Gemini 1.0 Pro** to help students w
 </div>
 For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be found at https://ai.google.dev/models/gemini
 
-### Currently uses Gemini 1.0 Pro, will be updated to use Gemini 1.5 Pro once API is released to the public alongside new features. 
+### Currently uses *Gemini 1.0 Pro*, will be updated to use *Gemini 1.5 Pro* once API is released to the public alongside new features. 
 ## Features
 - Uses API version V1.
 - Saves API key to the cache, which persists upon page reload.
@@ -14,6 +14,7 @@ For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be f
 - Mobile-friendly layout.
 - Markdown support for output.
 - User can copy AI output.
+- User/Document character count is shown. - **AI response will not work for documents/input that exceed the 32k character limit**
 
 ## Usage
 1. Go to https://gemini-homework-helper.vercel.app/
