@@ -138,5 +138,24 @@ p {
     padding: 5px;
 }
 
+.github-link {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    z-index: 1000;
+    padding: 10px 20px; 
+    background-color: #333;
+    color: #fff; 
+    text-align: center; 
+    border-radius: 5px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    transition: background-color 0.3s; 
+}
+
+.github-link:hover {
+    background-color: #555; 
+}
+
 
 
