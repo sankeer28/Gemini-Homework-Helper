@@ -21,7 +21,8 @@ For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be f
 4. Click the "Send" button to get the AI's response.
 
 ## API Key
-You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/)
+You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/app/apikey)
+
 
 ## Contributing
 1. **Bug Reports**: If you encounter any issues with the application, please file a bug report in the issue tracker on our project page.
@@ -35,4 +36,7 @@ https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/b6a53b35-73
 This project is for educational purposes only. Please use it responsibly.
 - [API documentation for Web-based use](https://ai.google.dev/tutorials/get_started_web)
 
+#### Next Steps
+- add button on page to take user who doesn't have api key to get api key
+- add copy button for ai output 
 
