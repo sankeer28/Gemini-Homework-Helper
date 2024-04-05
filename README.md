@@ -35,7 +35,7 @@ You will need to provide your Google Generative AI API key. You can get an API k
 https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/b6a53b35-7376-468e-ad00-d9249f236e59
 
 ## Note
-This project is for educational purposes only. Please use it responsibly.
+This project is for educational purposes only. All safety features have been set to the minimum, Please use it responsibly.
 - [API documentation for Web-based use](https://ai.google.dev/tutorials/get_started_web)
 
 
