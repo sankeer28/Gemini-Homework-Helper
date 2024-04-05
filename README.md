@@ -21,7 +21,8 @@ For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be f
 4. Click the "Send" button to get the AI's response.
 
 ## API Key
-You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/)
+You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/app/apikey)
+
 
 ## Contributing
 1. **Bug Reports**: If you encounter any issues with the application, please file a bug report in the issue tracker on our project page.
