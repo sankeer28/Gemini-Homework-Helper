@@ -150,11 +150,50 @@ p {
     border-radius: 5px; 
     text-decoration: none; 
     font-weight: bold; 
-    transition: background-color 0.3s; 
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .github-link:hover {
     background-color: #555; 
+    transform: scale(1.05); 
+}
+
+
+.api-link {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    z-index: 1000;
+    padding: 10px 20px; 
+    background-color: #333;
+    color: #fff; 
+    text-align: center; 
+    border-radius: 5px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    transition: background-color 0.3s ease, transform 0.2s ease;
+
+}
+
+.api-link:hover {
+    background-color: #555; 
+    transform: scale(1.05); 
+}
+
+
+#copyButton {
+    padding: 10px 20px;
+    background-color: #6c9cb5;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+#copyButton:hover {
+    background-color: #90c4e2;
+    transform: scale(1.05); 
 }
 
 

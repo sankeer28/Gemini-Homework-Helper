@@ -33,10 +33,29 @@
 
 <button id="sendButton">Send</button>
 <div id="output"></div>
+<button id="copyButton">Copy</button>
 <a href="https://github.com/sankeer28/Gemini-Homework-Helper" target="_blank" class="github-link">GitHub</a>
-
+<a href="https://aistudio.google.com/app/apikey" target="_blank" class="api-link">Need API Key?</a>
 
 <script type="module">
+
+  document.getElementById('copyButton').addEventListener('click', () => {
+    const outputElement = document.getElementById('output');
+    const textToCopy = outputElement.innerText;
+    const textarea = document.createElement('textarea');
+    textarea.value = textToCopy;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    const copyButton = document.getElementById('copyButton');
+    copyButton.textContent = 'Copied';
+    setTimeout(() => {
+        copyButton.textContent = 'Copy';
+    }, 2000); 
+});
+
+
   const apiKeyInput = document.getElementById('apiKeyInput');
   const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
 
