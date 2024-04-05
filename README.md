@@ -1,5 +1,5 @@
 # [Gemini Homework Helper 📝](https://gemini-homework-helper.vercel.app/)
-This project uses the Google Generative AI Gemini Pro to help students with homework. It works by extracting text from PDF and Word documents and taking the user's question to provide an answer. The user can also ask questions regarding uploaded images.
+This project uses the **Google Generative AI Gemini 1.0 Pro** to help students with homework. It works by extracting text from PDF and Word documents and taking the user's question to provide an answer. The user can also ask questions regarding uploaded images.
 
 <div style="display: flex; justify-content: center; margin: 0 auto;">
     <img src="https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/f6ffc0af-2d3e-49e9-8cb6-fac2396954d2" alt="Image 1" style="width: 100%; max-width: 100%;">
@@ -13,12 +13,14 @@ For context GPT3.5 uses 4,096 tokens. More information on Gemini models can be f
 - Uses Gemini-1.0-Pro and Gemini-Pro-Vision models to interpret text and images, models are automatically selected
 - Mobile-friendly layout.
 - Markdown support for output.
+- User can copy AI output.
 
 ## Usage
 1. Go to https://gemini-homework-helper.vercel.app/
-2. If you have a PDF (PDF must have copy-pasteable text) or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI. Uploading an image uses the Gemini-Pro-Vision model.
-3. You can also type your question directly into the text input field regarding a part of the document.
-4. Click the "Send" button to get the AI's response.
+2. Enter your API key in the input box.
+3. If you have a PDF (PDF must have copy-pasteable text) or Word document, you can upload it using the file input. The text will be extracted and used as input for the AI. Uploading an image uses the Gemini-Pro-Vision model.
+4. You can also type your question directly into the text input field regarding a part of the document.
+5. Click the "Send" button to get the AI's response.
 
 ## API Key
 You will need to provide your Google Generative AI API key. You can get an API key [here](https://aistudio.google.com/app/apikey)
