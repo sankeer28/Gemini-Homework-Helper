@@ -35,4 +35,7 @@ https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/b6a53b35-73
 This project is for educational purposes only. Please use it responsibly.
 - [API documentation for Web-based use](https://ai.google.dev/tutorials/get_started_web)
 
+#### Next Steps
+- add button on page to take user who doesn't have api key to get api key
+- add copy button for ai output 
 
