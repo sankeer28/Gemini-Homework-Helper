@@ -20,7 +20,7 @@
 <body>
 <div class="title">
   <h1>Gemini Homework Helper </h1>
-  <p>Unblock Homework Hurdles: Get Help When You’re Stuck!</p>
+  <p>Unblock Homework Hurdles: Upload and ask!</p>
   <p style="font-style: italic;">Valid Files: .pdf, .docx, .png, .jpg, .jpeg</p>
 </div>
 <div style="position: relative;">
@@ -96,61 +96,88 @@
   
   await createModel();
 
-  document.getElementById('sendButton').addEventListener('click', async () => {
-    const fileInput = document.getElementById('fileInput');
-    const prompt = document.getElementById('questionInput').value;
+const charCountElement = document.createElement('p');
+charCountElement.textContent = 'Character Count: 0'; 
+const outputDiv = document.getElementById('output');
+outputDiv.parentNode.insertBefore(charCountElement, outputDiv);
 
-    const outputElement = document.getElementById('output');
-    outputElement.innerHTML = '<p>Please wait...</p>'; 
+document.getElementById('sendButton').addEventListener('click', async () => {
+  const fileInput = document.getElementById('fileInput');
+  const prompt = document.getElementById('questionInput').value;
+  const outputElement = document.getElementById('output');
+  outputElement.innerHTML = '<p>Please wait...</p>';
 
-    if (fileInput.files.length > 0) {
-      const file = fileInput.files[0];
-      const reader = new FileReader();
-      reader.onload = async function(evt) {
-        const arrayBuffer = evt.target.result;
-        let textContent = '';
-        if (file.type === 'application/pdf') {
-          const pdfData = new Uint8Array(arrayBuffer);
-          const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
-          for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
-            const page = await pdfDoc.getPage(pageNum);
-            const text = await page.getTextContent();
-            textContent += text.items.map(item => item.str).join(' ');
+  if (fileInput.files.length > 0) {
+    const file = fileInput.files[0];
+    const reader = new FileReader();
+    reader.onload = async function(evt) {
+      const arrayBuffer = evt.target.result;
+      let textContent = '';
 
-          }
-        } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-          const textContentResult = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
-          textContent = textContentResult.value;
-        
-        } else { 
-          const imageParts = await Promise.all(
-            [...fileInput.files].map(fileToGenerativePart)
-          );
-          const result = await model.generateContent([prompt, ...imageParts]);
-          const response = await result.response;
-          const text = response.text();
-          outputElement.innerText = text;
-          return; 
+      if (file.type === 'application/pdf') {
+        const pdfData = new Uint8Array(arrayBuffer);
+        const pdfDoc = await pdfjsLib.getDocument({data: pdfData}).promise;
+        for(let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+          const page = await pdfDoc.getPage(pageNum);
+          const text = await page.getTextContent();
+          textContent += text.items.map(item => item.str).join(' ');
         }
-
-        console.log(textContent);
-        const result = await model.generateContent(prompt + ' ' + textContent);
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        const textContentResult = await mammoth.extractRawText({arrayBuffer: arrayBuffer});
+        textContent = textContentResult.value;
+      } else {
+        const imageParts = await Promise.all(
+          [...fileInput.files].map(fileToGenerativePart)
+        );
+        const result = await model.generateContent([prompt, ...imageParts]);
         const response = await result.response;
         const text = response.text();
-        
-        if (text.trim() === '') {
-          outputElement.innerText = 'No text input or image selected';
-        } else {
-          const converter = new showdown.Converter();
-          const html = converter.makeHtml(text);
-          outputElement.innerHTML = html;
-        }
-      };
-      reader.readAsArrayBuffer(file);
+        outputElement.innerText = text;
+        return;
+      }
+
+      console.log(textContent);
+      const extractedTextCharCount = textContent.length;
+      const questionCharCount = prompt.length;
+      charCountElement.textContent = `Character count: ${extractedTextCharCount + questionCharCount} `;
+      const result = await model.generateContent(prompt + ' ' + textContent);
+      const response = await result.response;
+      const text = response.text();
+
+      if (text.trim() === '') {
+        outputElement.innerText = 'No text input or image selected';
+      } else {
+        const converter = new showdown.Converter();
+        const html = converter.makeHtml(text);
+        outputElement.innerHTML = html;
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    if (prompt.trim() === '') {
+      outputElement.innerText = 'Please enter a question or upload a file.';
     } else {
-      outputElement.innerText = 'No file selected';
+      const questionCharCount = prompt.length;
+      charCountElement.textContent = `Character count: ${questionCharCount}`;
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      if (text.trim() === '') {
+        outputElement.innerText = 'No response found for the given question.';
+      } else {
+        const converter = new showdown.Converter();
+        const html = converter.makeHtml(text);
+        outputElement.innerHTML = html;
+      }
     }
-  });
+  }
+});
+
+document.getElementById('questionInput').addEventListener('input', () => {
+  const questionCharCount = document.getElementById('questionInput').value.length;
+  charCountElement.textContent = `Character count: ${questionCharCount}`; 
+});
+
   
   document.getElementById('fileInput').addEventListener('change', async (event) => {
     const file = event.target.files[0];
