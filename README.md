@@ -1,5 +1,6 @@
 # [Gemini Homework Helper 📝](https://gemini-homework-helper.vercel.app/)
 This project uses the **Google Generative AI Gemini 1.0 Pro** to help students with homework. It works by extracting text from PDF and Word documents and taking the user's question to provide an answer. The user can also ask questions regarding uploaded images.
+### *Please refrain from sharing personal information with any AI systems, as it may be used to train them. Protect your privacy by avoiding the disclosure of sensitive data.*
 
 <div style="display: flex; justify-content: center; margin: 0 auto;">
     <img src="https://github.com/sankeer28/Gemini-Homework-Helper/assets/112449287/f6ffc0af-2d3e-49e9-8cb6-fac2396954d2" alt="Image 1" style="width: 100%; max-width: 100%;">
